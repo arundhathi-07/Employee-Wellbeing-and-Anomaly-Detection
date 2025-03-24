@@ -8,16 +8,16 @@ def analyze_data():
     """Collects and analyzes data every hour"""
     while True:
         time.sleep(3600)  # Wait for 1 hour
-        print("\n⏳ Analyzing Data...")
+        print("\n Analyzing Data...")
 
         # Here, you can read the results of eye blinks, posture, and disengagement.
-        print("✅ Eye Blink Data Analyzed")
-        print("✅ Posture Data Analyzed")
-        print("✅ Disengagement Data Analyzed")
-        print("\n📊 Report Generated!")
+        print(" Eye Blink Data Analyzed")
+        print(" Posture Data Analyzed")
+        print(" Disengagement Data Analyzed")
+        print("\n Report Generated!")
 
 if __name__ == "__main__":
-    print("🚀 Starting Monitoring System...")
+    print(" Starting Monitoring System...")
 
     # Create threads for each feature
     eye_thread = threading.Thread(target=track_eye_blinks, daemon=True)
