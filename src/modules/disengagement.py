@@ -1,25 +1,51 @@
 import time
 from pynput import mouse, keyboard
+import threading
 
-def track_activity():
-    last_activity_time = time.time()
-    timeout = 15
+class DisengagementTracker:
+    def __init__(self, timeout=15):
+        self.last_activity_time = time.time()
+        self.timeout = timeout
+        self.disengaged = False
+        self.running = True
+        self.last_print_time = time.time()
 
-    def on_press(key):
-        nonlocal last_activity_time
-        print(f"Key {key} pressed")
-        last_activity_time = time.time()
+    def on_press(self, key):
+        self.last_activity_time = time.time()
+        if self.disengaged:
+            self.disengaged = False
+            print("[ENGAGEMENT] User re-engaged")
 
-    def on_click(x, y, button, pressed):
-        nonlocal last_activity_time
+    def on_click(self, x, y, button, pressed):
         if pressed:
-            print(f"Mouse clicked at ({x}, {y})")
-            last_activity_time = time.time()
+            self.last_activity_time = time.time()
+            if self.disengaged:
+                self.disengaged = False
+                print("[ENGAGEMENT] User re-engaged")
 
-    with keyboard.Listener(on_press=on_press) as keyboard_listener, mouse.Listener(on_click=on_click) as mouse_listener:
-        while True:
-            if time.time() - last_activity_time > timeout:
-                print("User is disengaged.")
-                last_activity_time = time.time()
-
-            time.sleep(1)
+    def check_activity(self):
+        with keyboard.Listener(on_press=self.on_press) as keyboard_listener, \
+             mouse.Listener(on_click=self.on_click) as mouse_listener:
+            while self.running:
+                current_time = time.time()
+                if current_time - self.last_activity_time > self.timeout:
+                    if not self.disengaged:
+                        self.disengaged = True
+                        print("[ENGAGEMENT] User disengaged")
+                
+                # Print status every 5 seconds
+                if current_time - self.last_print_time > 5:
+                    status = "disengaged" if self.disengaged else "engaged"
+                    print(f"[ENGAGEMENT] Current status: {status}")
+                    self.last_print_time = current_time
+                
+                time.sleep(1)
+    
+    def start(self):
+        self.thread = threading.Thread(target=self.check_activity)
+        self.thread.daemon = True
+        self.thread.start()
+    
+    def stop(self):
+        self.running = False
+        self.thread.join()
