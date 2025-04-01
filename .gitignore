@@ -1,2 +1,3 @@
 venv/
 src/models/
+.DS_Store
